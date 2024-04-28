@@ -3,7 +3,7 @@ module github.com/akshaybt001/DatingApp_UserService
 go 1.21.0
 
 require (
-	github.com/akshaybt001/DatingApp_proto_files v0.0.0-20240427034938-46e7f06d6823
+	github.com/akshaybt001/DatingApp_proto_files v0.0.0-20240428054724-958be661b802
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	gorm.io/gorm v1.25.9

@@ -441,29 +441,28 @@ func (user *UserService) UserGetAddress(ctx context.Context, req *pb.GetUserById
 	return res, nil
 }
 
-// func (user *UserService) GetAllPreference(ctx context.Context,req *pb.GetUserById) (*pb.PreferenceResponse,error){
-// 	profile,err:=user.adapters.GetProfileIdByUserId(req.Id)
-// 	if err!=nil{
-// 		return nil,err
-// 	}
-// 	preference,err:=user.adapters.GetPreferenceByProfileId(profile)
-// 	if err!=nil{
-// 		return nil,err
-// 	}
-// 	preferenceId:=""
-// 	if preference.Id!=uuid.Nil{
-// 		preferenceId=preference.Id.String()
-// 	}
-// 	res:=&pb.PreferenceResponse{
-// 		Id: preferenceId,
-// 		Minage: int32(preference.MinAge),
-// 		Maxage: int32(preference.MaxAge),
-// 		Gender: int32(preference.GenderId),
-// 		Desirecity: preference.DesireCity,
-
-// 	}
-// 	return res,nil
-// }
+func (user *UserService) GetAllPreference(ctx context.Context, req *pb.GetUserById) (*pb.PreferenceResponse, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	preference, err := user.adapters.GetPreferenceByProfileId(profile)
+	if err != nil {
+		return nil, err
+	}
+	preferenceId := ""
+	if preference.Id != uuid.Nil {
+		preferenceId = preference.Id.String()
+	}
+	res := &pb.PreferenceResponse{
+		Id:         preferenceId,
+		Minage:     int32(preference.MinAge),
+		Maxage:     int32(preference.MaxAge),
+		Gender:     int32(preference.GenderId),
+		Desirecity: preference.DesireCity,
+	}
+	return res, nil
+}
 
 func (user *UserService) AdminAddGender(ctx context.Context, req *pb.AddGenderRequest) (*pb.NoArg, error) {
 	reqEntity := entities.Gender{
