@@ -73,10 +73,8 @@ type Address struct {
 }
 
 type Profile struct {
-	ID       uuid.UUID `gorm:"primaryKey;unique;not null"`
-	UserId   uuid.UUID
-	User     User `gorm:"foreignKey:UserId"`
-	GenderId uint
-	Gender   Gender `gorm:"foreignKey:GenderId"`
-	Image    string
+	ID     uuid.UUID `gorm:"primaryKey;unique;not null"`
+	UserId uuid.UUID
+	User   User `gorm:"foreignKey:UserId"`
+	Image  string
 }

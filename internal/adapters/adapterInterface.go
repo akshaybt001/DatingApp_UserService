@@ -24,17 +24,21 @@ type AdapterInterface interface {
 
 	UserAddInterest(interest entities.UserInterests) error
 	UserDeleteInterest(interest entities.UserInterests) error
-	UserGetAllInterest(profileId string) ([]helperstruct.InterestHelper, error)
+	UserGetAllInterest(profileId string) ([]entities.Interests, error)
 	GetInterestById(id int) (helperstruct.InterestHelper, error)
 	GetUserInterestById(profileId string, interestId int) (entities.UserInterests, error)
 	UserAddAddress(entities.Address) error
 	UserEditAddress(entities.Address) error
 	GetAddressByProfileId(profileId string) (entities.Address, error)
 	GetGenderById(id int) (helperstruct.GenderHelper, error)
+	GetGenderByProfileId(id string) (entities.UserGenders,error)
 	GetUserGenderById(profileId string, genderId int) (entities.UserGenders, error)
 	UserAddGender(gender entities.UserGenders) error
-	UserGetAllGender(profileId string) ([]helperstruct.GenderHelper, error)
+	UserGetAllGender(profileId string) (helperstruct.GenderHelper, error)
 	GetPreferenceByProfileId(profileId string) (entities.Preference, error)
 	UserAddPreference(entities.Preference) error
 	UserEditPreference(entities.Preference) error
+	GetUserById(userId string)(entities.User,error)
+	UploadProfileImage(Image, ProfileId string) (string, error)
+	GetProfilePic(string) (string, error)
 }

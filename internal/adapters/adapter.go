@@ -11,7 +11,6 @@ type UserAdapter struct {
 	DB *gorm.DB
 }
 
-
 func NewUserAdapter(db *gorm.DB) *UserAdapter {
 	return &UserAdapter{
 		DB: db,
@@ -187,20 +186,20 @@ func (user *UserAdapter) UserDeleteInterest(interest entities.UserInterests) err
 	return nil
 }
 
-func (user *UserAdapter) UserGetAllInterest(profileId string) ([]helperstruct.InterestHelper, error) {
-	var res []helperstruct.InterestHelper
-	selectInterestQueryUser := `SELECT i.id AS interest_id,i.interest AS interest_name FROM interests i JOIN user_interests u ON u.interest_id=i.id WHERE profile_id=$1`
+func (user *UserAdapter) UserGetAllInterest(profileId string) ([]entities.Interests, error) {
+	var res []entities.Interests
+	selectInterestQueryUser := `SELECT i.id ,i.interest FROM interests i JOIN user_interests u ON u.interest_id=i.id WHERE profile_id=$1`
 	if err := user.DB.Raw(selectInterestQueryUser, profileId).Scan(&res).Error; err != nil {
-		return []helperstruct.InterestHelper{}, err
+		return []entities.Interests{}, err
 	}
 	return res, nil
 }
 
-func (user *UserAdapter) UserGetAllGender(profileId string) ([]helperstruct.GenderHelper, error) {
-	var res []helperstruct.GenderHelper
+func (user *UserAdapter) UserGetAllGender(profileId string) (helperstruct.GenderHelper, error) {
+	var res helperstruct.GenderHelper
 	selectQueryUser := `SELECT g.id AS gender_id,g.name AS gender_name FROM genders g JOIN user_genders u ON u.gender_id=g.id WHERE profile_id=$1`
 	if err := user.DB.Raw(selectQueryUser, profileId).Scan(&res).Error; err != nil {
-		return []helperstruct.GenderHelper{}, err
+		return helperstruct.GenderHelper{}, err
 	}
 	return res, nil
 }
@@ -269,13 +268,12 @@ func (user *UserAdapter) UserEditAddress(req entities.Address) error {
 
 // UserEditPreference implements AdapterInterface.
 func (user *UserAdapter) UserEditPreference(req entities.Preference) error {
-	updateQuery:=`UPDATE preferences SET min_age=$1,max_age=$2,gender_id=$3,desired_city=$4 WHERE profile_id=$5`
-	if err:=user.DB.Exec(updateQuery,req.MinAge,req.MaxAge,req.GenderId,req.DesireCity,req.ProfileId).Error;err!=nil{
+	updateQuery := `UPDATE preferences SET min_age=$1,max_age=$2,gender_id=$3,desire_city=$4 WHERE profile_id=$5`
+	if err := user.DB.Exec(updateQuery, req.MinAge, req.MaxAge, req.GenderId, req.DesireCity, req.ProfileId).Error; err != nil {
 		return err
 	}
 	return nil
 }
-
 
 func (user *UserAdapter) GetAddressByProfileId(id string) (entities.Address, error) {
 	var res entities.Address
@@ -286,12 +284,49 @@ func (user *UserAdapter) GetAddressByProfileId(id string) (entities.Address, err
 	return res, nil
 }
 
+func (user *UserAdapter) GetGenderByProfileId(id string) (entities.UserGenders, error) {
+	var res entities.UserGenders
+	selectQuery := `SELECT * FROM user_genders WHERE profile_id=?`
+	if err := user.DB.Raw(selectQuery, id).Scan(&res).Error; err != nil {
+		return entities.UserGenders{}, err
+	}
+	return res, nil
+}
+
 // GetPreferenceByProfileId implements AdapterInterface.
 func (user *UserAdapter) GetPreferenceByProfileId(profileId string) (entities.Preference, error) {
 	var res entities.Preference
 	selectQuery := `SELECT * FROM preferences WHERE profile_id=?`
 	if err := user.DB.Raw(selectQuery, profileId).Scan(&res).Error; err != nil {
 		return entities.Preference{}, err
+	}
+	return res, nil
+}
+
+// GetUserById implements AdapterInterface.
+func (user *UserAdapter) GetUserById(userId string) (entities.User, error) {
+	selectUserByIdQuery := `SELECT * FROM users WHERE id=?`
+	var res entities.User
+	if err := user.DB.Raw(selectUserByIdQuery, userId).Scan(&res).Error; err != nil {
+		return entities.User{}, err
+	}
+	return res, nil
+}
+
+func (user *UserAdapter) UploadProfileImage(image, profileId string) (string, error) {
+	var res string
+	insertImageQuery := `UPDATE profiles SET image=$1 WHERE id=$2 RETURNING image`
+	if err := user.DB.Raw(insertImageQuery, image, profileId).Scan(&res).Error; err != nil {
+		return "", err
+	}
+	return res, nil
+}
+
+func (user *UserAdapter) GetProfilePic(profileId string) (string, error) {
+	var res string
+	selectQuery := `SELECT image from profiles WHERE id=$1 AND image IS NOT NULL`
+	if err := user.DB.Raw(selectQuery, profileId).Scan(&res).Error; err != nil {
+		return "", err
 	}
 	return res, nil
 }

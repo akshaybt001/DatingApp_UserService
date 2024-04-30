@@ -7,18 +7,21 @@ import (
 	"github.com/akshaybt001/DatingApp_UserService/entities"
 	"github.com/akshaybt001/DatingApp_UserService/internal/adapters"
 	"github.com/akshaybt001/DatingApp_UserService/internal/helper"
+	"github.com/akshaybt001/DatingApp_UserService/internal/usecases"
 	"github.com/akshaybt001/DatingApp_proto_files/pb"
 	"github.com/google/uuid"
 )
 
 type UserService struct {
 	adapters adapters.AdapterInterface
+	usecases usecases.Usecases
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserService(adapters adapters.AdapterInterface) *UserService {
+func NewUserService(adapters adapters.AdapterInterface, usecases usecases.Usecases) *UserService {
 	return &UserService{
 		adapters: adapters,
+		usecases: usecases,
 	}
 }
 
@@ -283,7 +286,7 @@ func (user *UserService) AddGenderUser(ctx context.Context, req *pb.UpdateGender
 	return nil, nil
 }
 
-func (user *UserService) DeleteSkillUser(ctx context.Context, req *pb.DeleteInterestRequest) (*pb.NoArg, error) {
+func (user *UserService) DeleteInterestUser(ctx context.Context, req *pb.DeleteInterestRequest) (*pb.NoArg, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.UserId)
 	if err != nil {
 		return nil, err
@@ -313,9 +316,10 @@ func (user *UserService) GetAllInterestsUser(req *pb.GetUserById, srv pb.UserSer
 	}
 	for _, interest := range interests {
 		res := &pb.InterestResponse{
-			Id:       int32(interest.InterestId),
-			Interest: interest.InterestName,
+			Id:       int32(interest.Id),
+			Interest: interest.Interest,
 		}
+
 		if err := srv.Send(res); err != nil {
 			return err
 		}
@@ -323,26 +327,6 @@ func (user *UserService) GetAllInterestsUser(req *pb.GetUserById, srv pb.UserSer
 	return nil
 }
 
-func (user *UserService) GetAllGenderUser(req *pb.GetUserById, srv pb.UserService_GetAllGenderUserServer) error {
-	profileId, err := user.adapters.GetProfileIdByUserId(req.Id)
-	if err != nil {
-		return err
-	}
-	genders, err := user.adapters.UserGetAllGender(profileId)
-	if err != nil {
-		return err
-	}
-	for _, gender := range genders {
-		res := &pb.GenderResponse{
-			Id:     int32(gender.GenderId),
-			Gender: gender.GenderName,
-		}
-		if err := srv.Send(res); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func (user *UserService) UserAddAddress(ctx context.Context, req *pb.AddAddressRequest) (*pb.NoArg, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.UserId)
@@ -418,6 +402,8 @@ func (user *UserService) UserEditPreference(ctx context.Context, req *pb.Prefere
 
 }
 
+
+
 func (user *UserService) UserGetAddress(ctx context.Context, req *pb.GetUserById) (*pb.AddressResponse, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
 	if err != nil {
@@ -440,6 +426,41 @@ func (user *UserService) UserGetAddress(ctx context.Context, req *pb.GetUserById
 	}
 	return res, nil
 }
+func (user *UserService) GetAllGenderUser(ctx context.Context,req *pb.GetUserById) (*pb.GenderResponse,error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
+	if err != nil {
+		return nil,err
+	}
+	// genders, err := user.adapters.UserGetAllGender(profileId)
+	// if err != nil {
+	// 	return err
+	// }
+	// for _, gender := range genders {
+	// 	res := &pb.GenderResponse{
+	// 		Id:     int32(gender.GenderId),
+	// 		Gender: gender.GenderName,
+	// 	}
+	// 	if err := srv.Send(res); err != nil {
+	// 		return err
+	// 	}
+	// }
+	// return nil
+	// gender,err:=user.adapters.GetGenderByProfileId(profile)
+	// if err!=nil{
+	// 	return nil,err
+	// }
+	genders, err := user.adapters.UserGetAllGender(profile)
+	if err != nil {
+		return nil,err
+	}
+	res:=&pb.GenderResponse{
+		Id: int32(genders.GenderId),
+		Gender: genders.GenderName,
+	}
+	return res,nil
+	
+}
+
 
 func (user *UserService) GetAllPreference(ctx context.Context, req *pb.GetUserById) (*pb.PreferenceResponse, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
@@ -510,4 +531,48 @@ func (user *UserService) UserAddPreference(ctx context.Context, req *pb.Preferen
 	}
 	return nil, nil
 
+}
+
+func (user *UserService) GetUser(ctx context.Context, req *pb.GetUserById) (*pb.UserSignupResponse, error) {
+	userData, err := user.adapters.GetUserById(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	res := &pb.UserSignupResponse{
+		Id:    userData.ID.String(),
+		Name:  userData.Name,
+		Email: userData.Email,
+		Phone: userData.Phone,
+	}
+	return res, nil
+}
+
+func (user *UserService) UserUploadProfileImage(ctx context.Context, req *pb.UserImageRequest) (*pb.UserImageResponse, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	url, err := user.usecases.UploadImage(req, profile)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("hai", url)
+	res := &pb.UserImageResponse{
+		Url: url,
+	}
+	return res, nil
+}
+
+func (user *UserService) UserGetProfilePic(ctx context.Context, req *pb.GetUserById) (*pb.UserImageResponse, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	image, err := user.adapters.GetProfilePic(profile)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UserImageResponse{
+		Url: image,
+	}, nil
 }
