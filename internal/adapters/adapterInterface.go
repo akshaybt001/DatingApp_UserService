@@ -31,14 +31,25 @@ type AdapterInterface interface {
 	UserEditAddress(entities.Address) error
 	GetAddressByProfileId(profileId string) (entities.Address, error)
 	GetGenderById(id int) (helperstruct.GenderHelper, error)
-	GetGenderByProfileId(id string) (entities.UserGenders,error)
+	GetGenderByProfileId(id string) (entities.UserGenders, error)
 	GetUserGenderById(profileId string, genderId int) (entities.UserGenders, error)
 	UserAddGender(gender entities.UserGenders) error
 	UserGetAllGender(profileId string) (helperstruct.GenderHelper, error)
 	GetPreferenceByProfileId(profileId string) (entities.Preference, error)
 	UserAddPreference(entities.Preference) error
 	UserEditPreference(entities.Preference) error
-	GetUserById(userId string)(entities.User,error)
+	GetUserById(userId string) (entities.User, error)
 	UploadProfileImage(Image, ProfileId string) (string, error)
 	GetProfilePic(string) (string, error)
+	UpdateAge(age int, profileId string) error
+	GetAge(profileId string) (int, error)
+	FetchUser(profile string) (helperstruct.FetchUser, error)
+	FetchPreference(string) (helperstruct.FetchPreference, error)
+	FetchInterests(id string) ([]string, error)
+	FetchUsers(maxAge, minAge, gender int, id string) ([]helperstruct.Home, error)
+	FetchImages(id string) (string, error)
+
+	IsUserExist(id string) (bool, error)
+	DecrementLikeCount(userId string) error
+	UpdateSubscription(userId string, subscribed bool) error
 }

@@ -3,14 +3,16 @@ package usecases
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/akshaybt001/DatingApp_UserService/internal/adapters"
 	"github.com/akshaybt001/DatingApp_proto_files/pb"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/go-redis/redis"
 	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type UserUseCase struct {
@@ -21,6 +23,16 @@ func NewUserUseCase(useradapter adapters.AdapterInterface) *UserUseCase {
 	return &UserUseCase{
 		userAdapter: useradapter,
 	}
+}
+var redisClient *redis.Client
+
+func init() {
+	fmt.Println("hii from init redis")
+	redisClient = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 }
 
 func (user *UserUseCase) UploadImage(req *pb.UserImageRequest, profileId string) (string, error) {
@@ -48,3 +60,5 @@ func (user *UserUseCase) UploadImage(req *pb.UserImageRequest, profileId string)
 	url, err := user.userAdapter.UploadProfileImage(presignedURL.String(), profileId)
 	return url, err
 }
+
+

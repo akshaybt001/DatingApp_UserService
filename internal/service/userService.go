@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/akshaybt001/DatingApp_UserService/entities"
+	helperstruct "github.com/akshaybt001/DatingApp_UserService/entities/helperStruct"
 	"github.com/akshaybt001/DatingApp_UserService/internal/adapters"
 	"github.com/akshaybt001/DatingApp_UserService/internal/helper"
 	"github.com/akshaybt001/DatingApp_UserService/internal/usecases"
 	"github.com/akshaybt001/DatingApp_proto_files/pb"
+	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 )
 
@@ -23,6 +26,17 @@ func NewUserService(adapters adapters.AdapterInterface, usecases usecases.Usecas
 		adapters: adapters,
 		usecases: usecases,
 	}
+}
+
+var redisClient *redis.Client
+
+func init() {
+	fmt.Println("hii from init redis")
+	redisClient = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 }
 
 func (user *UserService) UserSignup(ctx context.Context, req *pb.UserSignupRequest) (*pb.UserSignupResponse, error) {
@@ -327,7 +341,6 @@ func (user *UserService) GetAllInterestsUser(req *pb.GetUserById, srv pb.UserSer
 	return nil
 }
 
-
 func (user *UserService) UserAddAddress(ctx context.Context, req *pb.AddAddressRequest) (*pb.NoArg, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.UserId)
 	if err != nil {
@@ -402,8 +415,6 @@ func (user *UserService) UserEditPreference(ctx context.Context, req *pb.Prefere
 
 }
 
-
-
 func (user *UserService) UserGetAddress(ctx context.Context, req *pb.GetUserById) (*pb.AddressResponse, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
 	if err != nil {
@@ -426,10 +437,10 @@ func (user *UserService) UserGetAddress(ctx context.Context, req *pb.GetUserById
 	}
 	return res, nil
 }
-func (user *UserService) GetAllGenderUser(ctx context.Context,req *pb.GetUserById) (*pb.GenderResponse,error) {
+func (user *UserService) GetAllGenderUser(ctx context.Context, req *pb.GetUserById) (*pb.GenderResponse, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	// genders, err := user.adapters.UserGetAllGender(profileId)
 	// if err != nil {
@@ -451,16 +462,15 @@ func (user *UserService) GetAllGenderUser(ctx context.Context,req *pb.GetUserByI
 	// }
 	genders, err := user.adapters.UserGetAllGender(profile)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	res:=&pb.GenderResponse{
-		Id: int32(genders.GenderId),
+	res := &pb.GenderResponse{
+		Id:     int32(genders.GenderId),
 		Gender: genders.GenderName,
 	}
-	return res,nil
-	
-}
+	return res, nil
 
+}
 
 func (user *UserService) GetAllPreference(ctx context.Context, req *pb.GetUserById) (*pb.PreferenceResponse, error) {
 	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
@@ -575,4 +585,204 @@ func (user *UserService) UserGetProfilePic(ctx context.Context, req *pb.GetUserB
 	return &pb.UserImageResponse{
 		Url: image,
 	}, nil
+}
+
+func (user *UserService) UserAddAge(ctx context.Context, req *pb.UserAgeRequest) (*pb.NoArg, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	layout := "2006-01-02T15:04:05.999999Z"
+	dob, err := time.Parse(layout, req.Dob)
+	if err != nil {
+		return &pb.NoArg{}, fmt.Errorf("please provide time in appropriate format")
+	}
+	age := helper.CalculateAge(dob)
+
+	if err := user.adapters.UpdateAge(age, profile); err != nil {
+		return nil, err
+	}
+	return nil, nil
+
+}
+
+func (user *UserService) UserGetAge(ctx context.Context, req *pb.GetUserById) (*pb.UserAgeResponse, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	age, err := user.adapters.GetAge(profile)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UserAgeResponse{
+		Age: int32(age),
+	}, nil
+}
+
+func (user *UserService) HomePage(ctx context.Context, req *pb.GetUserById) (*pb.HomeResponse, error) {
+	profile, err := user.adapters.GetProfileIdByUserId(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	preference, err := user.adapters.FetchPreference(profile)
+	if err != nil {
+		return nil, err
+	}
+	userData, err := user.adapters.FetchUser(profile)
+	if err != nil {
+		return nil, err
+	}
+	interestData, err := user.adapters.FetchInterests(profile)
+	if err != nil {
+		return nil, err
+	}
+	end := len(interestData) - 1
+	users, err := user.adapters.FetchUsers(preference.MinAge, preference.MaxAge, preference.Gender, profile)
+	if err != nil {
+		return nil, err
+	}
+
+	displayedUserIds, err := getDisplayedUserIds(profile)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("display :", displayedUserIds)
+
+	scores := []float64{}
+	matchUsers := []helperstruct.Home{}
+	for _, u := range users {
+		userProfile, err := user.adapters.GetProfileIdByUserId(u.Id)
+		if err != nil {
+			return nil, err
+		}
+		image, err := user.adapters.FetchImages(userProfile)
+		if err != nil {
+			return nil, err
+		}
+		u.Images = image
+
+		interests, err := user.adapters.FetchInterests(userProfile)
+		if err != nil {
+			return nil, err
+		}
+		userPreference, err := user.adapters.FetchPreference(userProfile)
+		if err != nil {
+			return nil, err
+		}
+		if userPreference.DesireCity != preference.DesireCity {
+			continue
+		}
+
+		u.Interests = interests
+		interestScore := 0
+		for _, interest := range interests {
+			search := helper.SearchForInterest(interestData, interest, 0, end)
+			if !search {
+				continue
+			}
+			interestScore++
+		}
+		fmt.Println("akshay :", u.Name)
+		if !displayedUserIds[u.Id] {
+			AgeScore := helper.Abs(u.Age - userData.Age)
+			score := float64(AgeScore) + 2*float64(interestScore)
+			scores = append(scores, score)
+			matchUsers = append(matchUsers, u)
+
+			displayedUserIds[u.Id] = true
+		}
+
+	}
+	if len(matchUsers) == 0 {
+		return nil, fmt.Errorf("no new recommendations available")
+	}
+
+	helper.QuickSort(scores, matchUsers, 0, len(scores)-1)
+
+	var homeResponse *pb.HomeResponse
+	id := matchUsers[0].Id
+
+	seen := map[string]bool{id: true}
+
+	err = updateDisplayedUserIds(profile, seen)
+	if err != nil {
+		return nil, fmt.Errorf("here is the problem")
+	}
+
+	homeResponse = &pb.HomeResponse{
+		Id:        matchUsers[0].Id,
+		Name:      matchUsers[0].Name,
+		Age:       int32(matchUsers[0].Age),
+		Gender:    matchUsers[0].Gender,
+		City:      matchUsers[0].City,
+		Country:   matchUsers[0].Country,
+		Image:     matchUsers[0].Images,
+		Interests: matchUsers[0].Interests,
+	}
+
+	fmt.Println("home :", homeResponse)
+
+	return homeResponse, nil
+}
+
+func getDisplayedUserIds(userID string) (map[string]bool, error) {
+	displayedUserIdsKey := fmt.Sprintf("displayed_user_ids:%s", userID)
+	displayedUserIds := make(map[string]bool)
+
+	userIdsInRedis, err := redisClient.SMembers(displayedUserIdsKey).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, userIdStr := range userIdsInRedis {
+		displayedUserIds[userIdStr] = true
+	}
+
+	return displayedUserIds, nil
+}
+
+func updateDisplayedUserIds(userID string, displayedUserIds map[string]bool) error {
+	displayedUserIdsKey := fmt.Sprintf("displayed_user_ids:%s", userID)
+	userIds := make([]interface{}, 0, len(displayedUserIds))
+
+	for userId := range displayedUserIds {
+		userIds = append(userIds, userId)
+	}
+
+	_, err := redisClient.SAdd(displayedUserIdsKey, userIds...).Result()
+	return err
+}
+
+func (user *UserService) GetUserData(ctx context.Context, req *pb.GetUserById) (*pb.UserDataResponse, error) {
+	userData, err := user.adapters.GetUserById(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	res := &pb.UserDataResponse{
+		Id:           userData.ID.String(),
+		Name:         userData.Name,
+		Email:        userData.Email,
+		Phone:        userData.Phone,
+		IsBlocked:    userData.IsBlocked,
+		LikeCount:    int32(userData.LikeCount),
+		IsSubscribed: userData.IsSubscribed,
+	}
+	return res, nil
+}
+
+func (user *UserService) DecrementLikeCount(ctx context.Context, req *pb.GetUserById) (*pb.NoArg, error) {
+	err := user.adapters.DecrementLikeCount(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (user *UserService) UpdateSubscription(ctx context.Context, req *pb.UpdateSubscriptionRequest) (*pb.NoArg, error) {
+	if err := user.adapters.UpdateSubscription(req.UserId, req.Subscription); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }

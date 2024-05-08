@@ -3,7 +3,7 @@ module github.com/akshaybt001/DatingApp_UserService
 go 1.21.0
 
 require (
-	github.com/akshaybt001/DatingApp_proto_files v0.0.0-20240429135458-1f8784499fe9
+	github.com/akshaybt001/DatingApp_proto_files v0.0.0-20240507065649-04c142ae5eee
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.21.0
@@ -29,9 +29,11 @@ require (
 )
 
 require (
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/minio/minio-go/v7 v7.0.70
+	github.com/robfig/cron v1.2.0
 	google.golang.org/grpc v1.63.2
 	gorm.io/driver/postgres v1.5.7
 )

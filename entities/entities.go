@@ -14,6 +14,7 @@ type User struct {
 	Password     string
 	IsBlocked    bool `json:"is_blocked" gorm:"default:false"`
 	ReportCount  int
+	LikeCount    int  `json:"like_count" gorm:"default:3"`
 	IsSubscribed bool `json:"is_subscribed" gorm:"default:false"`
 	CreatedAt    time.Time
 }
@@ -77,4 +78,5 @@ type Profile struct {
 	UserId uuid.UUID
 	User   User `gorm:"foreignKey:UserId"`
 	Image  string
+	Age    int
 }
