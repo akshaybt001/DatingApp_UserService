@@ -3,7 +3,6 @@ package usecases
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -24,10 +23,10 @@ func NewUserUseCase(useradapter adapters.AdapterInterface) *UserUseCase {
 		userAdapter: useradapter,
 	}
 }
+
 var redisClient *redis.Client
 
 func init() {
-	fmt.Println("hii from init redis")
 	redisClient = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -37,7 +36,7 @@ func init() {
 
 func (user *UserUseCase) UploadImage(req *pb.UserImageRequest, profileId string) (string, error) {
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
-		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESSKEY"),os.Getenv("MINIO_SECRETKEY"),""),
+		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESSKEY"), os.Getenv("MINIO_SECRETKEY"), ""),
 		Secure: false,
 	})
 	if err != nil {
@@ -60,5 +59,3 @@ func (user *UserUseCase) UploadImage(req *pb.UserImageRequest, profileId string)
 	url, err := user.userAdapter.UploadProfileImage(presignedURL.String(), profileId)
 	return url, err
 }
-
-

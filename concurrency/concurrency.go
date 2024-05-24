@@ -22,7 +22,7 @@ func NewCronJob(service *service.UserService, db *gorm.DB) *CronJob {
 }
 func (c *CronJob) Start() {
 	cron := cron.New()
-	err := cron.AddFunc("00 00 * * *", func() {
+	err := cron.AddFunc("23 59 * * *", func() {
 		c.UpdateLikeCount()
 	})
 	if err != nil {

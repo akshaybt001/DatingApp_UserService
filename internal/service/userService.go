@@ -31,7 +31,6 @@ func NewUserService(adapters adapters.AdapterInterface, usecases usecases.Usecas
 var redisClient *redis.Client
 
 func init() {
-	fmt.Println("hii from init redis")
 	redisClient = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
