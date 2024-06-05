@@ -28,7 +28,7 @@ type Home struct {
 	Gender  string
 	City    string
 	Country string
-	Images  string
+	Images  []string
 	Interests []string
 }
 

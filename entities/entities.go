@@ -80,3 +80,10 @@ type Profile struct {
 	Image  string
 	Age    int
 }
+
+type Images struct {
+	Id        uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ProfileId uuid.UUID
+	Profile   Profile `gorm:"foreignKey:ProfileId"`
+	FileName  string
+}

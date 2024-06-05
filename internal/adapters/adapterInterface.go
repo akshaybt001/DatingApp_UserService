@@ -47,7 +47,7 @@ type AdapterInterface interface {
 	FetchPreference(string) (helperstruct.FetchPreference, error)
 	FetchInterests(id string) ([]string, error)
 	FetchUsers(maxAge, minAge, gender int, id string) ([]helperstruct.Home, error)
-	FetchImages(id string) (string, error)
+	FetchImages(id string) ([]string, error)
 
 	IsUserExist(id string) (bool, error)
 	DecrementLikeCount(userId string) error

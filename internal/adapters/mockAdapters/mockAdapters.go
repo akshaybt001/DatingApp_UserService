@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	entities "github.com/akshaybt001/DatingApp_UserService/entities"
-	helperStruct "github.com/akshaybt001/DatingApp_UserService/entities/helperStruct"
+	helperstruct "github.com/akshaybt001/DatingApp_UserService/entities/helperStruct"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -150,10 +150,10 @@ func (mr *MockAdapterInterfaceMockRecorder) DecrementLikeCount(userId interface{
 }
 
 // FetchImages mocks base method.
-func (m *MockAdapterInterface) FetchImages(id string) (string, error) {
+func (m *MockAdapterInterface) FetchImages(id string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchImages", id)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -180,10 +180,10 @@ func (mr *MockAdapterInterfaceMockRecorder) FetchInterests(id interface{}) *gomo
 }
 
 // FetchPreference mocks base method.
-func (m *MockAdapterInterface) FetchPreference(arg0 string) (helperStruct.FetchPreference, error) {
+func (m *MockAdapterInterface) FetchPreference(arg0 string) (helperstruct.FetchPreference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchPreference", arg0)
-	ret0, _ := ret[0].(helperStruct.FetchPreference)
+	ret0, _ := ret[0].(helperstruct.FetchPreference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -195,10 +195,10 @@ func (mr *MockAdapterInterfaceMockRecorder) FetchPreference(arg0 interface{}) *g
 }
 
 // FetchUser mocks base method.
-func (m *MockAdapterInterface) FetchUser(profile string) (helperStruct.FetchUser, error) {
+func (m *MockAdapterInterface) FetchUser(profile string) (helperstruct.FetchUser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchUser", profile)
-	ret0, _ := ret[0].(helperStruct.FetchUser)
+	ret0, _ := ret[0].(helperstruct.FetchUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -210,10 +210,10 @@ func (mr *MockAdapterInterfaceMockRecorder) FetchUser(profile interface{}) *gomo
 }
 
 // FetchUsers mocks base method.
-func (m *MockAdapterInterface) FetchUsers(maxAge, minAge, gender int, id string) ([]helperStruct.Home, error) {
+func (m *MockAdapterInterface) FetchUsers(maxAge, minAge, gender int, id string) ([]helperstruct.Home, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchUsers", maxAge, minAge, gender, id)
-	ret0, _ := ret[0].([]helperStruct.Home)
+	ret0, _ := ret[0].([]helperstruct.Home)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -270,10 +270,10 @@ func (mr *MockAdapterInterfaceMockRecorder) GetAge(profileId interface{}) *gomoc
 }
 
 // GetGenderById mocks base method.
-func (m *MockAdapterInterface) GetGenderById(id int) (helperStruct.GenderHelper, error) {
+func (m *MockAdapterInterface) GetGenderById(id int) (helperstruct.GenderHelper, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGenderById", id)
-	ret0, _ := ret[0].(helperStruct.GenderHelper)
+	ret0, _ := ret[0].(helperstruct.GenderHelper)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -315,10 +315,10 @@ func (mr *MockAdapterInterfaceMockRecorder) GetGenderByProfileId(id interface{})
 }
 
 // GetInterestById mocks base method.
-func (m *MockAdapterInterface) GetInterestById(id int) (helperStruct.InterestHelper, error) {
+func (m *MockAdapterInterface) GetInterestById(id int) (helperstruct.InterestHelper, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetInterestById", id)
-	ret0, _ := ret[0].(helperStruct.InterestHelper)
+	ret0, _ := ret[0].(helperstruct.InterestHelper)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -621,10 +621,10 @@ func (mr *MockAdapterInterfaceMockRecorder) UserEditPreference(arg0 interface{})
 }
 
 // UserGetAllGender mocks base method.
-func (m *MockAdapterInterface) UserGetAllGender(profileId string) (helperStruct.GenderHelper, error) {
+func (m *MockAdapterInterface) UserGetAllGender(profileId string) (helperstruct.GenderHelper, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserGetAllGender", profileId)
-	ret0, _ := ret[0].(helperStruct.GenderHelper)
+	ret0, _ := ret[0].(helperstruct.GenderHelper)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

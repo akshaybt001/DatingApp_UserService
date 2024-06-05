@@ -107,7 +107,7 @@ func (user *UserAdapter) GetInterestByName(interest string) (entities.Interests,
 	return res, nil
 }
 
-// GetGenderByName implements AdapterInterface.
+
 func (user *UserAdapter) GetGenderByName(gender string) (entities.Gender, error) {
 	var res entities.Gender
 	selectQuery := `SELECT * FROM genders WHERE name=?`
@@ -315,8 +315,13 @@ func (user *UserAdapter) GetUserById(userId string) (entities.User, error) {
 
 func (user *UserAdapter) UploadProfileImage(image, profileId string) (string, error) {
 	var res string
+	id := uuid.New()
 	insertImageQuery := `UPDATE profiles SET image=$1 WHERE id=$2 RETURNING image`
 	if err := user.DB.Raw(insertImageQuery, image, profileId).Scan(&res).Error; err != nil {
+		return "", err
+	}
+	insertImageDb := `INSERT INTO images (id,profile_id,file_name) VALUES ($1,$2,$3) `
+	if err := user.DB.Exec(insertImageDb, id, profileId, image).Error; err != nil {
 		return "", err
 	}
 	return res, nil
@@ -385,11 +390,11 @@ func (user *UserAdapter) FetchUsers(maxAge, minAge, gender int, id string) ([]he
 	return users, nil
 }
 
-func (user *UserAdapter) FetchImages(id string) (string, error) {
-	var images string
-	selectQuery := `SELECT image FROM profiles WHERE id=?`
+func (user *UserAdapter) FetchImages(id string) ([]string, error) {
+	var images []string
+	selectQuery := `SELECT file_name FROM images i JOIN profiles p ON i.profile_id=p.id WHERE profile_id=?`
 	if err := user.DB.Raw(selectQuery, id).Scan(&images).Error; err != nil {
-		return "", err
+		return []string{}, err
 	}
 	return images, nil
 }
